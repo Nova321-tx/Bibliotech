@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BiblioTech - Sistema Universitario</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <h2>📚 BiblioTech</h2>
+      <p>Sistema Universitario</p>
+    </div>
+    <div class="user">
+      <div class="avatar">JD</div>
+      <h3>Juan García</h3>
+      <p>Bibliotecario</p>
+    </div>
+    <ul class="menu">
+      <li class="active" data-page="dashboard.html">📊 Dashboard</li>
+      <li data-page="alertas.html">🔔 Alertas</li>
+      <li data-page="prestamos.html">📕 Préstamos</li>
+      <li data-page="catalogo.html">📘 Catálogo</li>
+      <li data-page="usuarios.html">👥 Usuarios</li>
+      <li data-page="reservas.html">📅 Reservas</li>
+      <li data-page="informes.html">📈 Informes</li>
+    </ul>
+    <div class="bottom">
+      <button id="btn-config">⚙️ Configuración</button>
+      <button id="btn-salir">🚪 Salir</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <iframe id="content-frame" src="views/dashboard.html"></iframe>
+  </div>
+</body>
+</html>

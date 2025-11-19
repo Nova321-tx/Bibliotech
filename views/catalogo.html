@@ -1,0 +1,121 @@
+<section class="catalogo">
+  <h1>Gestión de Libros</h1>
+  <form id="formLibro">
+    <input type="text" name="titulo" placeholder="Título" required>
+    <input type="text" name="autor" placeholder="Autor" required>
+    <input type="text" name="categoria" placeholder="Categoría" required>
+    <input type="number" name="anio" placeholder="Año" required>
+    <button type="submit">Guardar Libro</button>
+  </form>
+
+  <table id="tablaLibros">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Autor</th>
+        <th>Categoría</th>
+        <th>Año</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const SUPABASE_URL = "https://ebgzqsebzxusdbgonihk.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZ3pxc2Vienh1c2RiZ29uaWhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyODg3OTMsImV4cCI6MjA3ODg2NDc5M30.lahbk7kXwaupa8jlaR08BDlXrPm4Bzs8OAGYksK62SM";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const tabla = document.querySelector('#tablaLibros tbody');
+  const form = document.getElementById('formLibro');
+
+  // Función para cargar libros
+  async function cargarLibros() {
+    const { data, error } = await supabase
+      .from("libros")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Error al leer libros:", error);
+      tabla.innerHTML = `<tr><td colspan="6">Error al cargar datos</td></tr>`;
+      return;
+    }
+
+    tabla.innerHTML = '';
+    (data || []).forEach(l => {
+      tabla.innerHTML += `
+        <tr>
+          <td>${l.id}</td>
+          <td>${l.titulo ?? ""}</td>
+          <td>${l.autor ?? ""}</td>
+          <td>${l.categoria ?? ""}</td>
+          <td>${l.anio ?? ""}</td>
+          <td>
+            <button data-id="${l.id}" class="btn-edit">Editar</button>
+            <button data-id="${l.id}" class="btn-del">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    // Delegación para eliminar
+    document.querySelectorAll(".btn-del").forEach(b => {
+      b.onclick = async (ev) => {
+        const id = Number(ev.currentTarget.getAttribute("data-id"));
+        if (!confirm("¿Eliminar libro?")) return;
+        const { error } = await supabase.from("libros").delete().eq("id", id);
+        if (error) return console.error("Error eliminar:", error);
+        cargarLibros();
+      };
+    });
+
+    // Delegación para editar
+    document.querySelectorAll(".btn-edit").forEach(b => {
+      b.onclick = (ev) => {
+        const id = Number(ev.currentTarget.getAttribute("data-id"));
+        const libro = (data || []).find(x => x.id === id);
+        if (!libro) return;
+        form.titulo.value = libro.titulo ?? "";
+        form.autor.value = libro.autor ?? "";
+        form.categoria.value = libro.categoria ?? "";
+        form.anio.value = libro.anio ?? "";
+        form.dataset.editId = String(id);
+      };
+    });
+  }
+
+  // Enviar formulario
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const libro = {
+      titulo: String(formData.get("titulo") || ""),
+      autor: String(formData.get("autor") || ""),
+      categoria: String(formData.get("categoria") || ""),
+      anio: Number(formData.get("anio") || 0)
+    };
+
+    const editId = form.dataset.editId ? Number(form.dataset.editId) : null;
+
+    if (editId) {
+      const { error } = await supabase.from("libros").update(libro).eq("id", editId);
+      if (error) return console.error("Error al actualizar:", error);
+      delete form.dataset.editId;
+    } else {
+      const { error } = await supabase.from("libros").insert([libro]);
+      if (error) return console.error("Error al insertar:", error);
+    }
+
+    form.reset();
+    cargarLibros();
+  });
+
+  // Carga inicial
+  cargarLibros();
+</script>
