@@ -1,0 +1,6 @@
+services:
+  - type: web
+    env: static
+    name: bibliotech
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "dist"
